@@ -4,6 +4,7 @@ const Demo: React.FC = () => {
   const fullText = "Посмотрите, как ваш новый администратор работает сам.";
   const [typedText, setTypedText] = useState('');
   const [isTyping, setIsTyping] = useState(true);
+  const [isVideoBuffering, setIsVideoBuffering] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
@@ -48,10 +49,12 @@ const Demo: React.FC = () => {
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
+          setIsVideoBuffering(true); // Assume buffering will start
           const playPromise = videoElement.play();
           if (playPromise !== undefined) {
             playPromise.catch(error => {
               console.error("Video autoplay was prevented by the browser:", error);
+              setIsVideoBuffering(false);
             });
           }
         } else {
@@ -59,7 +62,8 @@ const Demo: React.FC = () => {
         }
       },
       {
-        threshold: 0.5, // Trigger when 50% of the video is visible
+        threshold: 0.5, 
+        rootMargin: '0px 0px 600px 0px', // Start loading 600px before it enters the viewport
       }
     );
 
@@ -92,18 +96,29 @@ const Demo: React.FC = () => {
               <div className="h-[46px] w-[3px] bg-gray-800 absolute -left-[17px] top-[124px] rounded-l-lg"></div>
               <div className="h-[46px] w-[3px] bg-gray-800 absolute -left-[17px] top-[178px] rounded-l-lg"></div>
               <div className="h-[64px] w-[3px] bg-gray-800 absolute -right-[17px] top-[142px] rounded-r-lg"></div>
-              <div className="rounded-[2rem] overflow-hidden w-full h-full bg-black">
+              <div className="relative rounded-[2rem] overflow-hidden w-full h-full bg-black">
                 <video
                     ref={videoRef}
                     loop
                     muted
                     playsInline
+                    preload="metadata"
                     className="w-full h-full object-cover"
-                    poster="https://i.imgur.com/TUh5j1G.png"
+                    poster="https://i.imgur.com/gfm62r8.png"
+                    onWaiting={() => setIsVideoBuffering(true)}
+                    onPlaying={() => setIsVideoBuffering(false)}
                 >
-                    <source src="https://allwebs.ru/images/2025/10/14/20b8a54e3838e01fb8cc481ea279f0d7.mp4" type="video/mp4" />
+                    <source src="https://allwebs.ru/images/2025/10/16/8d16f12614fcc9ee3d8c10fa87d9d485.mp4" type="video/mp4" />
                     Your browser does not support the video tag.
                 </video>
+                {isVideoBuffering && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/60" aria-label="Загрузка видео...">
+                        <svg className="animate-spin h-10 w-10 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                    </div>
+                )}
               </div>
             </div>
           </div>

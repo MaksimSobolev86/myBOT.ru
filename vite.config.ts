@@ -5,7 +5,6 @@ import react from '@vitejs/plugin-react';
 export default defineConfig(({ mode }) => {
     const env = loadEnv(mode, '.', '');
     return {
-      base: '/myBOT.ru/',
       server: {
         port: 3000,
         host: '0.0.0.0',
@@ -19,18 +18,6 @@ export default defineConfig(({ mode }) => {
         alias: {
           '@': path.resolve(__dirname, '.'),
         }
-      },
-      // ДОБАВЬ ЭТОТ БЛОК ДЛЯ CSP
-      build: {
-        rollupOptions: {
-          output: {
-            manualChunks: undefined,
-          },
-        },
-      },
-      // ДОБАВЬ ЭТУ НАСТРОЙКУ
-      esbuild: {
-        legalComments: 'none'
       }
     };
 });

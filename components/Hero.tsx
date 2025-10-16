@@ -1,9 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
-const Hero: React.FC = () => {
+interface HeroProps {
+  onVideoLoaded: () => void;
+}
+
+const VIDEO_SRC = "https://allwebs.ru/images/2025/10/16/e495101e91e7d50edae4803c9393c740.mp4";
+
+const Hero: React.FC<HeroProps> = ({ onVideoLoaded }) => {
   const tagline = "личный администратор в кармане";
   const [typedTagline, setTypedTagline] = useState('');
   const [isTyping, setIsTyping] = useState(true);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
     setIsTyping(true);
@@ -27,37 +34,90 @@ const Hero: React.FC = () => {
     return () => clearTimeout(timeoutId);
   }, []);
 
+  useEffect(() => {
+    const videoElement = videoRef.current;
+    if (!videoElement) return;
+
+    // Signal when video is ready to play to hide preloader
+    const handleVideoReady = () => {
+      onVideoLoaded();
+      videoElement.removeEventListener('canplaythrough', handleVideoReady);
+    };
+
+    // Check if video is already buffered (e.g., from cache)
+    if (videoElement.readyState >= 4) { // HAVE_ENOUGH_DATA
+      handleVideoReady();
+    } else {
+      videoElement.addEventListener('canplaythrough', handleVideoReady);
+    }
+    
+    // Intersection observer for smart play/pause and load/unload
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          // Restore source and play if it's not set
+          if (!videoElement.hasAttribute('src')) {
+            videoElement.src = VIDEO_SRC;
+            videoElement.load();
+          }
+          videoElement.play().catch(error => {
+            console.info("Hero video autoplay was prevented:", error);
+          });
+        } else {
+          // Pause and unload video to free up resources
+          videoElement.pause();
+          videoElement.removeAttribute('src');
+          videoElement.load();
+        }
+      },
+      {
+        threshold: 0.05,
+      }
+    );
+
+    observer.observe(videoElement);
+
+    return () => {
+      if (videoElement) {
+        videoElement.removeEventListener('canplaythrough', handleVideoReady);
+      }
+      observer.disconnect();
+    };
+  }, [onVideoLoaded]);
+
   return (
     <section className="relative h-screen flex items-center justify-center text-center overflow-hidden">
       <video
+        ref={videoRef}
         autoPlay
         loop
         muted
         playsInline
+        preload="auto"
         className="absolute top-0 left-0 w-full h-full object-cover z-0"
-        poster="https://allwebs.ru/images/2025/10/14/7501624469dca1940fb2a3b887891151.mp4"
+        poster="https://i.imgur.com/TUh5j1G.png"
+        src={VIDEO_SRC}
       >
-        <source src="https://allwebs.ru/images/2025/10/14/7501624469dca1940fb2a3b887891151.mp4" type="video/mp4" />
         Your browser does not support the video tag.
       </video>
       <div className="absolute top-0 left-0 w-full h-full bg-gray-900/75 z-[1]"></div>
       <div className="relative z-10 px-4 animate-[fadeInUp_1s_ease-out]">
-        <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight mb-2">
+        <h1 className="text-4xl sm:text-5xl md:text-7xl font-extrabold tracking-tight mb-2">
           <span className="font-poiret-one text-primary">myBOT</span> — твой
         </h1>
-        <h2 className={`text-3xl md:text-5xl text-gray-200 font-medium mb-8 h-12 md:h-16 ${isTyping ? 'typing-cursor' : ''}`}>
+        <h2 className={`text-2xl sm:text-3xl md:text-5xl text-gray-200 font-medium mb-8 h-12 md:h-16 ${isTyping ? 'typing-cursor' : ''}`}>
           {typedTagline}
         </h2>
-        <p className="max-w-3xl mx-auto text-lg md:text-xl text-gray-300 mb-8">
+        <p className="max-w-3xl mx-auto text-base sm:text-lg md:text-xl text-gray-300 mb-8">
           Брони, уведомления и аналитика — прямо в Telegram.
           <br />
           Работает 24/7. Без ошибок. Без лишних слов.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <a href="https://t.me/Irala_bela_vita" target="_blank" rel="noopener noreferrer" className="text-white font-bold py-3 px-8 rounded-lg text-lg transition-all duration-300 btn-interactive">
+          <a href="https://t.me/Irala_bela_vita" target="_blank" rel="noopener noreferrer" className="text-white font-bold py-3 px-8 rounded-lg text-base sm:text-lg transition-all duration-300 btn-interactive">
             Попробовать бесплатно
           </a>
-          <a href="https://t.me/AISobolev_bot" target="_blank" rel="noopener noreferrer" className="bg-white/10 backdrop-blur-sm text-white font-bold py-3 px-8 rounded-lg text-lg hover:bg-white/20 transition-all duration-300">
+          <a href="https://t.me/AISobolev_bot" target="_blank" rel="noopener noreferrer" className="bg-white/10 backdrop-blur-sm text-white font-bold py-3 px-8 rounded-lg text-base sm:text-lg hover:bg-white/20 transition-all duration-300">
             Посмотреть демо
           </a>
         </div>

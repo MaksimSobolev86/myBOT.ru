@@ -77,6 +77,37 @@
         from { opacity: 0; transform: scale(0.95) translateY(10px); }
         to { opacity: 1; transform: scale(1) translateY(0); }
       }
+      @keyframes pulse-logo {
+        0%, 100% {
+          transform: scale(1);
+          filter: drop-shadow(0 0 8px rgba(16, 185, 129, 0.4));
+        }
+        50% {
+          transform: scale(1.05);
+          filter: drop-shadow(0 0 16px rgba(16, 185, 129, 0.7));
+        }
+      }
+      .animate-pulse-logo {
+        animation: pulse-logo 2.s ease-in-out infinite;
+      }
+      @keyframes loader-stroke {
+        0% {
+          stroke-dashoffset: 290;
+          transform: rotate(0deg);
+        }
+        50% {
+          stroke-dashoffset: 72.5;
+          transform: rotate(720deg);
+        }
+        100% {
+          stroke-dashoffset: 290;
+          transform: rotate(1080deg);
+        }
+      }
+      .animate-loader-stroke {
+        animation: loader-stroke 2s ease-in-out infinite;
+        transform-origin: center;
+      }
     </style>
     <script>
       tailwind.config = {
@@ -99,7 +130,6 @@
     </script>
 
 <link rel="stylesheet" href="/index.css">
-
   <script type="importmap">
 {
   "imports": {
@@ -109,7 +139,7 @@
   }
 }
 </script>
-  <script type="module" crossorigin src="/myBOT.ru/assets/index-DtET1nTu.js"></script>
+  <script type="module" crossorigin src="/assets/index-DjuqJK0t.js"></script>
 </head>
   <body>
     <div id="root"></div>

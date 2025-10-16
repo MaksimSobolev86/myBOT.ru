@@ -1,4 +1,4 @@
-import React, { useState, lazy, Suspense, useCallback } from 'react';
+import React, { useState, lazy, Suspense, useCallback, useEffect } from 'react';
 
 // Eager load components visible above the fold
 import Header from './components/Header';
@@ -7,6 +7,7 @@ import Footer from './components/Footer';
 import TelegramCTA from './components/TelegramCTA';
 import CanvasBackground from './components/CanvasBackground';
 import ContactModal from './components/ContactModal';
+import Preloader from './components/Preloader';
 
 // Lazy load components that are below the fold for faster initial page load
 const Stats = lazy(() => import('./components/Stats'));
@@ -30,32 +31,62 @@ const LoadingSpinner: React.FC = () => (
 
 const App: React.FC = () => {
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
+  const [isSiteLoaded, setIsSiteLoaded] = useState(false); // Tracks window.onload
+  const [isVideoReady, setIsVideoReady] = useState(false); // Tracks hero video readiness
+  const [isPreloaderHidden, setIsPreloaderHidden] = useState(false); // Controls preloader final state
+
+  // This effect handles the 'load' event of the window for general assets.
+  useEffect(() => {
+    const handleLoad = () => setIsSiteLoaded(true);
+
+    if (document.readyState === 'complete') {
+      handleLoad();
+    } else {
+      window.addEventListener('load', handleLoad);
+      return () => window.removeEventListener('load', handleLoad);
+    }
+  }, []);
+
+  // This effect checks if both the site assets and the critical hero video are ready, then hides the preloader.
+  useEffect(() => {
+    if (isSiteLoaded && isVideoReady) {
+      // Use a timeout to ensure the preloader doesn't disappear too abruptly
+      setTimeout(() => setIsPreloaderHidden(true), 500);
+    }
+  }, [isSiteLoaded, isVideoReady]);
+  
+  const handleVideoReady = useCallback(() => {
+    setIsVideoReady(true);
+  }, []);
 
   // Use useCallback to memoize event handlers, preventing unnecessary re-renders of child components
   const handleOpenContactModal = useCallback(() => setIsContactModalOpen(true), []);
   const handleCloseContactModal = useCallback(() => setIsContactModalOpen(false), []);
 
   return (
-    <div className="text-white bg-gray-900 overflow-x-hidden isolate">
-      <CanvasBackground />
-      <Header onContactClick={handleOpenContactModal} />
-      <main>
-        <Hero />
-        <Suspense fallback={<LoadingSpinner />}>
-          <Stats />
-          <Problems />
-          <Features />
-          <Demo />
-          <Pricing />
-          <ContactForm />
-          <Testimonials />
-          <CTA />
-        </Suspense>
-      </main>
-      <Footer />
-      <TelegramCTA />
-      <ContactModal isOpen={isContactModalOpen} onClose={handleCloseContactModal} />
-    </div>
+    <>
+      <Preloader isLoaded={isPreloaderHidden} />
+      <div className="text-white bg-gray-900 overflow-x-hidden isolate">
+        <CanvasBackground />
+        <Header onContactClick={handleOpenContactModal} />
+        <main>
+          <Hero onVideoLoaded={handleVideoReady} />
+          <Suspense fallback={<LoadingSpinner />}>
+            <Stats />
+            <Problems />
+            <Features />
+            <Demo />
+            <Pricing />
+            <ContactForm />
+            <Testimonials />
+            <CTA />
+          </Suspense>
+        </main>
+        <Footer />
+        <TelegramCTA />
+        <ContactModal isOpen={isContactModalOpen} onClose={handleCloseContactModal} />
+      </div>
+    </>
   );
 };
 

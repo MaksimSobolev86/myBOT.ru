@@ -21,12 +21,12 @@ const Pricing: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
                 <div className="bg-gray-800/50 border border-white/10 p-6 rounded-lg text-center transition-all duration-300 hover:scale-105 hover:bg-primary/10 hover:backdrop-blur-sm">
                     <h3 className="text-lg font-semibold text-gray-400">💼 Подключение</h3>
-                    <p className="text-4xl font-bold my-2"><del className="text-2xl text-red-500/70">5000 ₽</del> → Бесплатно</p>
+                    <p className="text-3xl sm:text-4xl font-bold my-2"><del className="text-xl sm:text-2xl text-red-500/70">5000 ₽</del> → Бесплатно</p>
                     <p className="text-primary font-bold">до конца зимы</p>
                 </div>
                  <div className="bg-gray-800/50 border border-white/10 p-6 rounded-lg text-center transition-all duration-300 hover:scale-105 hover:bg-primary/10 hover:backdrop-blur-sm">
                     <h3 className="text-lg font-semibold text-gray-400">💸 Ежемесячный платеж</h3>
-                    <p className="text-4xl font-bold my-2"><del className="text-2xl text-red-500/70">1400 ₽</del> → 990 ₽</p>
+                    <p className="text-3xl sm:text-4xl font-bold my-2"><del className="text-xl sm:text-2xl text-red-500/70">1400 ₽</del> → 990 ₽</p>
                     <p className="text-primary font-bold">/ месяц</p>
                 </div>
             </div>
