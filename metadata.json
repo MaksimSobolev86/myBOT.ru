@@ -1,0 +1,5 @@
+{
+  "name": "myBOT - Your Personal Business Administrator",
+  "description": "myBOT is a smart assistant for your business that handles bookings, notifications, and analytics directly in Telegram. It works 24/7, without errors, saving you time and increasing your profits.",
+  "requestFramePermissions": []
+}
