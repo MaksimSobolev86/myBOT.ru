@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { LogoIcon } from '../constants/icons';
 
 interface HeroProps {
   onVideoLoaded: () => void;
@@ -102,8 +103,10 @@ const Hero: React.FC<HeroProps> = ({ onVideoLoaded }) => {
       </video>
       <div className="absolute top-0 left-0 w-full h-full bg-gray-900/75 z-[1]"></div>
       <div className="relative z-10 px-4 animate-[fadeInUp_1s_ease-out]">
-        <h1 className="text-4xl sm:text-5xl md:text-7xl font-extrabold tracking-tight mb-2">
-          <span className="font-poiret-one text-primary">myBOT</span> — твой
+        <h1 className="text-4xl sm:text-5xl md:text-7xl font-extrabold tracking-tight mb-2 flex items-center justify-center flex-wrap">
+          <LogoIcon className="inline-block h-[1em] w-auto text-primary align-middle" />
+          <span className="mx-3 md:mx-4">—</span>
+          <span className="font-bold">твой</span>
         </h1>
         <h2 className={`text-2xl sm:text-3xl md:text-5xl text-gray-200 font-medium mb-8 h-12 md:h-16 ${isTyping ? 'typing-cursor' : ''}`}>
           {typedTagline}

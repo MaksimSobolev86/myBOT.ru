@@ -1,4 +1,5 @@
 
+
 import React from 'react';
 import { LogoIcon } from '../constants/icons';
 
@@ -7,9 +8,8 @@ const Footer: React.FC = () => {
     <footer className="bg-transparent text-gray-400">
       <div className="container mx-auto px-6 py-8">
         <div className="flex flex-col md:flex-row justify-between items-center gap-6">
-          <div className="flex items-center gap-3">
-            <LogoIcon className="h-7 w-7 text-primary" />
-            <span className="text-xl font-bold text-white font-poiret-one">myBOT</span>
+          <div className="flex items-center">
+            <LogoIcon className="h-10 w-auto text-white" />
           </div>
           <div className="text-center">
             <p>Контакты: <a href="mailto:magnifico.digital@yandex.ru" className="text-gray-300 hover:text-primary transition">magnifico.digital@yandex.ru</a></p>

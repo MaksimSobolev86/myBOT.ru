@@ -49,11 +49,13 @@ const useInView = (ref: React.RefObject<HTMLElement>, options: IntersectionObser
   return isInView;
 };
 
-const StatItem: React.FC<{ value: number; label: string }> = ({ value, label }) => {
+const StatItem: React.FC<{ value: number; label: string; suffix?: string }> = ({ value, label, suffix = '+' }) => {
     const { count, ref } = useCountUp(value, 2000);
     return (
         <div className="text-center">
-            <span ref={ref} className="text-5xl font-extrabold text-primary">{count.toLocaleString('ru-RU')}+</span>
+            <span ref={ref} className="text-5xl font-extrabold text-primary">
+              {count.toLocaleString('ru-RU')}{suffix}
+            </span>
             <p className="text-lg text-gray-400 mt-2">{label}</p>
         </div>
     );
@@ -65,9 +67,9 @@ const Stats: React.FC = () => {
     <section className="py-20 sm:py-24">
       <div className="container mx-auto px-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-          <StatItem value={125000} label="Броней обработано" />
-          <StatItem value={45000} label="Напоминаний отправлено" />
-          <StatItem value={98} label="% довольных клиентов" />
+          <StatItem value={150000} label="рублей заработано в год дополнительно" />
+          <StatItem value={360} label="часов в год времени освободилось" />
+          <StatItem value={98} label="довольных клиентов" suffix="%" />
         </div>
       </div>
     </section>

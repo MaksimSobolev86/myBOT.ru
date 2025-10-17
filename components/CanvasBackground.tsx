@@ -1,4 +1,5 @@
 
+
 import React, { useRef, useEffect } from 'react';
 
 // Define the structure for a ball object
@@ -89,7 +90,8 @@ const CanvasBackground: React.FC = () => {
 
         const grad = ctx.createRadialGradient(b.x, b.y, 0, b.x, b.y, size);
         grad.addColorStop(0, b.color1);
-        grad.addColorStop(1, b.color2);
+        grad.addColorStop(0.7, b.color2);
+        grad.addColorStop(1, 'transparent'); // Fade to transparent for soft edges
 
         ctx.globalAlpha = alpha;
         ctx.filter = `blur(${blur}px)`;

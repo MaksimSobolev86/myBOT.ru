@@ -16,10 +16,9 @@ const Header: React.FC<HeaderProps> = ({ onContactClick }) => {
   return (
     <>
       <header className="fixed top-0 left-0 right-0 z-50 backdrop-blur-lg border-b border-white/10">
-        <div className="container mx-auto px-6 py-4 flex justify-between items-center">
-          <div className="flex items-center gap-3">
-            <LogoIcon className="h-8 w-8 text-primary" />
-            <span className="text-2xl font-bold tracking-tight font-poiret-one">myBOT</span>
+        <div className="container mx-auto px-6 py-4 flex justify-between items-center h-[81px]">
+          <div className="flex items-center">
+            <LogoIcon className="h-10 w-auto text-white" />
           </div>
 
           {/* Desktop Nav */}
@@ -38,14 +37,14 @@ const Header: React.FC<HeaderProps> = ({ onContactClick }) => {
             </a>
           </div>
           
-          {/* Mobile Burger Button */}
+          {/* Mobile Burger/Close Button */}
           <div className="md:hidden">
             <button
-              onClick={() => setIsMobileMenuOpen(true)}
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               className="text-gray-300 hover:text-white focus:outline-none"
-              aria-label="Открыть меню"
+              aria-label={isMobileMenuOpen ? 'Закрыть меню' : 'Открыть меню'}
             >
-              <MenuIcon className="h-7 w-7" />
+              {isMobileMenuOpen ? <CloseIcon className="h-7 w-7" /> : <MenuIcon className="h-7 w-7" />}
             </button>
           </div>
 
@@ -54,21 +53,8 @@ const Header: React.FC<HeaderProps> = ({ onContactClick }) => {
       
       {/* Mobile Menu Overlay */}
       {isMobileMenuOpen && (
-        <div className="fixed inset-0 z-[60] bg-gray-900/90 backdrop-blur-xl md:hidden animate-[fade-in_0.3s_ease-out]">
-          <div className="container mx-auto px-6 py-4 flex justify-between items-center h-[81px] border-b border-white/10">
-            <div className="flex items-center gap-3">
-              <LogoIcon className="h-8 w-8 text-primary" />
-              <span className="text-2xl font-bold tracking-tight font-poiret-one">myBOT</span>
-            </div>
-            <button
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="text-gray-300 hover:text-white focus:outline-none"
-              aria-label="Закрыть меню"
-            >
-              <CloseIcon className="h-7 w-7" />
-            </button>
-          </div>
-          <div className="flex flex-col items-center justify-center h-[calc(100%-81px)]">
+        <div className="fixed inset-0 z-40 pt-[81px] bg-gray-900/90 backdrop-blur-xl md:hidden animate-[fade-in_0.3s_ease-out]">
+          <div className="flex flex-col items-center justify-center h-full pb-[81px]">
             <nav className="flex flex-col gap-10 text-center">
               <button
                 onClick={handleContactClick}

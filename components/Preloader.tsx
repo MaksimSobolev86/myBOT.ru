@@ -45,7 +45,7 @@ const Preloader: React.FC<PreloaderProps> = ({ isLoaded }) => {
         <LogoIcon className="absolute top-1/2 left-1/2 h-10 w-10 text-primary -translate-x-1/2 -translate-y-1/2" />
       </div>
 
-      <span className="mt-6 text-3xl font-bold tracking-tight font-poiret-one text-white">myBOT</span>
+      <LogoIcon className="mt-6 h-9 text-white" />
       <p className="mt-2 text-gray-400">Загружаем вашего помощника...</p>
     </div>
   );
