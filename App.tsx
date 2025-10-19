@@ -66,7 +66,7 @@ const App: React.FC = () => {
   return (
     <>
       <Preloader isLoaded={isPreloaderHidden} />
-      <div className="text-white bg-gray-900 overflow-x-hidden isolate">
+      <div className="text-white bg-transparent overflow-x-hidden isolate">
         <CanvasBackground />
         <Header onContactClick={handleOpenContactModal} />
         <main>

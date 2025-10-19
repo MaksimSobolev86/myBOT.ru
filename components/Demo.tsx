@@ -6,6 +6,7 @@ const Demo: React.FC = () => {
   const [typedText, setTypedText] = useState('');
   const [isTyping, setIsTyping] = useState(true);
   const [videoPlaybackState, setVideoPlaybackState] = useState<'pending' | 'playing' | 'blocked' | 'paused'>('pending');
+  const [isPosterBroken, setIsPosterBroken] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const posterSrc = "https://i.imgur.com/gfm62r8.png";
 
@@ -149,7 +150,7 @@ const Demo: React.FC = () => {
                     playsInline
                     preload="metadata"
                     className={`w-full h-full object-cover transition-opacity duration-500 ${videoPlaybackState === 'playing' || videoPlaybackState === 'paused' ? 'opacity-100' : 'opacity-0'}`}
-                    poster={posterSrc}
+                    poster={isPosterBroken ? '' : posterSrc}
                 >
                     <source src="https://allwebs.ru/images/2025/10/16/8d16f12614fcc9ee3d8c10fa87d9d485.mp4" type="video/mp4" />
                     Your browser does not support the video tag.
@@ -166,8 +167,13 @@ const Demo: React.FC = () => {
                 
                 {showPlayButtonOverlay && (
                     <div className="absolute inset-0">
-                        {videoPlaybackState === 'blocked' && (
-                           <img src={posterSrc} className="w-full h-full object-cover" alt="Превью демо-видео" />
+                        {videoPlaybackState === 'blocked' && !isPosterBroken && (
+                           <img 
+                                src={posterSrc} 
+                                className="w-full h-full object-cover" 
+                                alt="Превью демо-видео" 
+                                onError={() => setIsPosterBroken(true)}
+                           />
                         )}
                         <div className="absolute inset-0 flex items-center justify-center bg-black/50">
                             <div

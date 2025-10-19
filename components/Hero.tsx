@@ -13,7 +13,15 @@ const Hero: React.FC<HeroProps> = ({ onVideoLoaded }) => {
   const [typedTagline, setTypedTagline] = useState('');
   const [isTyping, setIsTyping] = useState(true);
   const [isAutoplaySuccessful, setIsAutoplaySuccessful] = useState(false);
+  const [isContentVisible, setIsContentVisible] = useState(false);
+  const [isPosterBroken, setIsPosterBroken] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    // Show and animate the content as soon as the component loads,
+    // without waiting for the video.
+    setIsContentVisible(true);
+  }, []);
 
   useEffect(() => {
     setIsTyping(true);
@@ -51,16 +59,17 @@ const Hero: React.FC<HeroProps> = ({ onVideoLoaded }) => {
     }
     
     const attemptPlay = () => {
-      videoElement.play()
-        .then(() => {
-          // Success: Fade the video in
-          setIsAutoplaySuccessful(true);
-        })
-        .catch(error => {
-          // Blocked: Video remains at opacity 0
-          console.info("Hero video autoplay was prevented:", error);
-          setIsAutoplaySuccessful(false);
-        });
+      const playPromise = videoElement.play();
+      if (playPromise !== undefined) {
+        playPromise
+          .then(() => {
+            setIsAutoplaySuccessful(true);
+          })
+          .catch(error => {
+            console.info("Hero video autoplay was prevented:", error);
+            setIsAutoplaySuccessful(false);
+          });
+      }
     };
     
     const observer = new IntersectionObserver(
@@ -85,8 +94,16 @@ const Hero: React.FC<HeroProps> = ({ onVideoLoaded }) => {
 
   return (
     <section className="relative h-screen flex items-center justify-center text-center overflow-hidden">
-       {/* Poster is always visible underneath */}
-       <img src={POSTER_SRC} className="absolute top-0 left-0 w-full h-full object-cover z-0" alt="" aria-hidden="true" />
+       {/* Poster is always visible underneath, but hidden if it fails to load */}
+       {!isPosterBroken && (
+        <img 
+            src={POSTER_SRC} 
+            className="absolute top-0 left-0 w-full h-full object-cover z-0" 
+            alt="" 
+            aria-hidden="true" 
+            onError={() => setIsPosterBroken(true)}
+        />
+       )}
       <video
         ref={videoRef}
         autoPlay
@@ -95,14 +112,14 @@ const Hero: React.FC<HeroProps> = ({ onVideoLoaded }) => {
         playsInline
         preload="auto"
         className={`absolute top-0 left-0 w-full h-full object-cover z-0 transition-opacity duration-1000 ${isAutoplaySuccessful ? 'opacity-100' : 'opacity-0'}`}
-        poster={POSTER_SRC} // Poster is a fallback for slow loading, but the <img> tag is the primary fallback
+        poster={isPosterBroken ? '' : POSTER_SRC} // Don't use broken poster
         src={VIDEO_SRC}
       >
         Your browser does not support the video tag.
       </video>
-      <div className="absolute top-0 left-0 w-full h-full bg-gray-900/75 z-[1]"></div>
+      <div className={`absolute top-0 left-0 w-full h-full bg-gray-900/75 z-[1] transition-opacity duration-1000 ${isContentVisible ? 'opacity-100' : 'opacity-0'}`}></div>
 
-      <div className="relative z-10 px-4 animate-[fadeInUp_1s_ease-out]">
+      <div className={`relative z-10 px-4 transition-all duration-1000 ease-out ${isContentVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'}`}>
         <h1 className="text-4xl sm:text-5xl md:text-7xl font-extrabold tracking-tight mb-2 flex items-center justify-center flex-wrap">
           <LogoIcon className="inline-block h-[1em] w-auto text-primary align-middle" />
           <span className="mx-3 md:mx-4">—</span>
