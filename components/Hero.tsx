@@ -12,7 +12,7 @@ const Hero: React.FC<HeroProps> = ({ onVideoLoaded }) => {
   const tagline = "личный администратор в кармане";
   const [typedTagline, setTypedTagline] = useState('');
   const [isTyping, setIsTyping] = useState(true);
-  const [isAutoplayBlocked, setIsAutoplayBlocked] = useState(false);
+  const [videoPlaybackState, setVideoPlaybackState] = useState<'pending' | 'playing' | 'blocked'>('pending');
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
@@ -42,39 +42,31 @@ const Hero: React.FC<HeroProps> = ({ onVideoLoaded }) => {
     if (!videoElement) return;
 
     // Signal when video is ready to play to hide preloader
-    const handleVideoReady = () => {
-      onVideoLoaded();
-      videoElement.removeEventListener('canplaythrough', handleVideoReady);
-    };
+    const handleVideoReady = () => onVideoLoaded();
 
-    // Check if video is already buffered (e.g., from cache)
     if (videoElement.readyState >= 4) { // HAVE_ENOUGH_DATA
       handleVideoReady();
     } else {
-      videoElement.addEventListener('canplaythrough', handleVideoReady);
+      videoElement.addEventListener('canplaythrough', handleVideoReady, { once: true });
     }
     
-    // Intersection observer for smart play/pause and load/unload
+    const attemptPlay = () => {
+      videoElement.play()
+        .then(() => {
+          setVideoPlaybackState('playing');
+        })
+        .catch(error => {
+          console.info("Hero video autoplay was prevented:", error);
+          setVideoPlaybackState('blocked');
+        });
+    };
+    
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          // Restore source and play if it's not set
-          if (!videoElement.hasAttribute('src')) {
-            videoElement.src = VIDEO_SRC;
-            videoElement.load();
-          }
-          const playPromise = videoElement.play();
-          if (playPromise !== undefined) {
-            playPromise.catch(error => {
-              console.info("Hero video autoplay was prevented:", error);
-              setIsAutoplayBlocked(true);
-            });
-          }
+          attemptPlay();
         } else {
-          // Pause and unload video to free up resources
           videoElement.pause();
-          videoElement.removeAttribute('src');
-          videoElement.load();
         }
       },
       {
@@ -85,9 +77,6 @@ const Hero: React.FC<HeroProps> = ({ onVideoLoaded }) => {
     observer.observe(videoElement);
 
     return () => {
-      if (videoElement) {
-        videoElement.removeEventListener('canplaythrough', handleVideoReady);
-      }
       observer.disconnect();
     };
   }, [onVideoLoaded]);
@@ -102,7 +91,7 @@ const Hero: React.FC<HeroProps> = ({ onVideoLoaded }) => {
         muted
         playsInline
         preload="auto"
-        className={`absolute top-0 left-0 w-full h-full object-cover z-0 transition-opacity duration-500 ${isAutoplayBlocked ? 'opacity-0' : 'opacity-100'}`}
+        className={`absolute top-0 left-0 w-full h-full object-cover z-0 transition-opacity duration-500 ${videoPlaybackState === 'playing' ? 'opacity-100' : 'opacity-0'}`}
         poster={POSTER_SRC}
         src={VIDEO_SRC}
       >

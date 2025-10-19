@@ -5,8 +5,7 @@ const Demo: React.FC = () => {
   const fullText = "Посмотрите, как ваш новый администратор работает сам.";
   const [typedText, setTypedText] = useState('');
   const [isTyping, setIsTyping] = useState(true);
-  const [isVideoBuffering, setIsVideoBuffering] = useState(false);
-  const [isAutoplayBlocked, setIsAutoplayBlocked] = useState(false);
+  const [videoPlaybackState, setVideoPlaybackState] = useState<'pending' | 'playing' | 'blocked'>('pending');
   const videoRef = useRef<HTMLVideoElement>(null);
   const posterSrc = "https://i.imgur.com/gfm62r8.png";
 
@@ -49,22 +48,21 @@ const Demo: React.FC = () => {
     const videoElement = videoRef.current;
     if (!videoElement) return;
 
+    const attemptPlay = () => {
+      videoElement.play()
+        .then(() => {
+          setVideoPlaybackState('playing');
+        })
+        .catch(error => {
+          console.error("Video autoplay was prevented by the browser:", error);
+          setVideoPlaybackState('blocked');
+        });
+    };
+
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          setIsVideoBuffering(true); // Assume buffering will start
-          const playPromise = videoElement.play();
-          if (playPromise !== undefined) {
-            playPromise
-              .then(() => {
-                setIsAutoplayBlocked(false);
-              })
-              .catch(error => {
-                console.error("Video autoplay was prevented by the browser:", error);
-                setIsVideoBuffering(false); // Stop buffering if play fails
-                setIsAutoplayBlocked(true); // Show play button instead
-              });
-          }
+          attemptPlay();
         } else {
           videoElement.pause();
         }
@@ -81,6 +79,14 @@ const Demo: React.FC = () => {
       observer.disconnect();
     };
   }, []);
+
+  const handleManualPlay = () => {
+    if (videoRef.current) {
+      videoRef.current.play().then(() => {
+        setVideoPlaybackState('playing');
+      });
+    }
+  };
 
   return (
     <section id="demo" className="py-20 sm:py-32 overflow-hidden">
@@ -113,33 +119,26 @@ const Demo: React.FC = () => {
                     preload="metadata"
                     className="w-full h-full object-cover"
                     poster={posterSrc}
-                    onWaiting={() => setIsVideoBuffering(true)}
-                    onPlaying={() => setIsVideoBuffering(false)}
                 >
                     <source src="https://allwebs.ru/images/2025/10/16/8d16f12614fcc9ee3d8c10fa87d9d485.mp4" type="video/mp4" />
                     Your browser does not support the video tag.
                 </video>
                 
-                {(isVideoBuffering && !isAutoplayBlocked) && (
+                {videoPlaybackState === 'pending' && (
                     <div className="absolute inset-0 flex items-center justify-center bg-black/60" aria-label="Загрузка видео...">
-                        <svg className="animate-spin h-10 w-10 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <svg className="animate-spin h-10 w-10 text-white" xmlns="http://www.w.org/2000/svg" fill="none" viewBox="0 0 24 24">
                             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                         </svg>
                     </div>
                 )}
                 
-                {isAutoplayBlocked && (
+                {videoPlaybackState === 'blocked' && (
                     <div className="absolute inset-0">
                         <img src={posterSrc} className="w-full h-full object-cover" alt="Превью демо-видео" />
                         <div className="absolute inset-0 flex items-center justify-center bg-black/50">
                             <button
-                                onClick={() => {
-                                    if (videoRef.current) {
-                                        videoRef.current.play();
-                                        setIsAutoplayBlocked(false);
-                                    }
-                                }}
+                                onClick={handleManualPlay}
                                 className="p-2 bg-white/20 backdrop-blur-sm rounded-full text-white transition-all duration-300 transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50"
                                 aria-label="Воспроизвести демо"
                             >
