@@ -12,7 +12,7 @@ const Hero: React.FC<HeroProps> = ({ onVideoLoaded }) => {
   const tagline = "личный администратор в кармане";
   const [typedTagline, setTypedTagline] = useState('');
   const [isTyping, setIsTyping] = useState(true);
-  const [videoPlaybackState, setVideoPlaybackState] = useState<'pending' | 'playing' | 'blocked'>('pending');
+  const [isAutoplaySuccessful, setIsAutoplaySuccessful] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
@@ -53,11 +53,13 @@ const Hero: React.FC<HeroProps> = ({ onVideoLoaded }) => {
     const attemptPlay = () => {
       videoElement.play()
         .then(() => {
-          setVideoPlaybackState('playing');
+          // Success: Fade the video in
+          setIsAutoplaySuccessful(true);
         })
         .catch(error => {
+          // Blocked: Video remains at opacity 0
           console.info("Hero video autoplay was prevented:", error);
-          setVideoPlaybackState('blocked');
+          setIsAutoplaySuccessful(false);
         });
     };
     
@@ -83,6 +85,7 @@ const Hero: React.FC<HeroProps> = ({ onVideoLoaded }) => {
 
   return (
     <section className="relative h-screen flex items-center justify-center text-center overflow-hidden">
+       {/* Poster is always visible underneath */}
        <img src={POSTER_SRC} className="absolute top-0 left-0 w-full h-full object-cover z-0" alt="" aria-hidden="true" />
       <video
         ref={videoRef}
@@ -91,8 +94,8 @@ const Hero: React.FC<HeroProps> = ({ onVideoLoaded }) => {
         muted
         playsInline
         preload="auto"
-        className={`absolute top-0 left-0 w-full h-full object-cover z-0 transition-opacity duration-500 ${videoPlaybackState === 'playing' ? 'opacity-100' : 'opacity-0'}`}
-        poster={POSTER_SRC}
+        className={`absolute top-0 left-0 w-full h-full object-cover z-0 transition-opacity duration-1000 ${isAutoplaySuccessful ? 'opacity-100' : 'opacity-0'}`}
+        poster={POSTER_SRC} // Poster is a fallback for slow loading, but the <img> tag is the primary fallback
         src={VIDEO_SRC}
       >
         Your browser does not support the video tag.

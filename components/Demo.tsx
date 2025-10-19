@@ -5,7 +5,7 @@ const Demo: React.FC = () => {
   const fullText = "Посмотрите, как ваш новый администратор работает сам.";
   const [typedText, setTypedText] = useState('');
   const [isTyping, setIsTyping] = useState(true);
-  const [videoPlaybackState, setVideoPlaybackState] = useState<'pending' | 'playing' | 'blocked'>('pending');
+  const [videoPlaybackState, setVideoPlaybackState] = useState<'pending' | 'playing' | 'blocked' | 'paused'>('pending');
   const videoRef = useRef<HTMLVideoElement>(null);
   const posterSrc = "https://i.imgur.com/gfm62r8.png";
 
@@ -44,17 +44,15 @@ const Demo: React.FC = () => {
     };
   }, []);
 
+  // Effect for autoplay
   useEffect(() => {
     const videoElement = videoRef.current;
     if (!videoElement) return;
 
     const attemptPlay = () => {
       videoElement.play()
-        .then(() => {
-          setVideoPlaybackState('playing');
-        })
         .catch(error => {
-          console.error("Video autoplay was prevented by the browser:", error);
+          console.info("Demo video autoplay was prevented by the browser:", error);
           setVideoPlaybackState('blocked');
         });
     };
@@ -62,14 +60,16 @@ const Demo: React.FC = () => {
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          attemptPlay();
+          if (videoPlaybackState === 'pending') {
+            attemptPlay();
+          }
         } else {
           videoElement.pause();
         }
       },
       {
         threshold: 0.5, 
-        rootMargin: '0px 0px 600px 0px', // Start loading 600px before it enters the viewport
+        rootMargin: '0px 0px -50px 0px',
       }
     );
 
@@ -78,15 +78,43 @@ const Demo: React.FC = () => {
     return () => {
       observer.disconnect();
     };
+  }, [videoPlaybackState]);
+  
+  // Effect to listen for native play/pause events
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    const handlePlay = () => setVideoPlaybackState('playing');
+    const handlePause = () => {
+      if (!video.ended && video.currentTime > 0) {
+        setVideoPlaybackState('paused');
+      }
+    };
+
+    video.addEventListener('play', handlePlay);
+    video.addEventListener('pause', handlePause);
+
+    return () => {
+      video.removeEventListener('play', handlePlay);
+      video.removeEventListener('pause', handlePause);
+    };
   }, []);
 
-  const handleManualPlay = () => {
-    if (videoRef.current) {
-      videoRef.current.play().then(() => {
-        setVideoPlaybackState('playing');
+  const handleVideoContainerClick = () => {
+    const video = videoRef.current;
+    if (!video) return;
+    
+    if (video.paused) {
+      video.play().catch(err => {
+        console.error("Manual play failed:", err);
       });
+    } else {
+      video.pause();
     }
   };
+  
+  const showPlayButtonOverlay = videoPlaybackState === 'blocked' || videoPlaybackState === 'paused';
 
   return (
     <section id="demo" className="py-20 sm:py-32 overflow-hidden">
@@ -110,14 +138,17 @@ const Demo: React.FC = () => {
               <div className="h-[46px] w-[3px] bg-gray-800 absolute -left-[17px] top-[124px] rounded-l-lg"></div>
               <div className="h-[46px] w-[3px] bg-gray-800 absolute -left-[17px] top-[178px] rounded-l-lg"></div>
               <div className="h-[64px] w-[3px] bg-gray-800 absolute -right-[17px] top-[142px] rounded-r-lg"></div>
-              <div className="relative rounded-[2rem] overflow-hidden w-full h-full bg-black">
+              <div 
+                className="relative rounded-[2rem] overflow-hidden w-full h-full bg-black cursor-pointer"
+                onClick={handleVideoContainerClick}
+              >
                 <video
                     ref={videoRef}
                     loop
                     muted
                     playsInline
                     preload="metadata"
-                    className="w-full h-full object-cover"
+                    className={`w-full h-full object-cover transition-opacity duration-500 ${videoPlaybackState === 'playing' || videoPlaybackState === 'paused' ? 'opacity-100' : 'opacity-0'}`}
                     poster={posterSrc}
                 >
                     <source src="https://allwebs.ru/images/2025/10/16/8d16f12614fcc9ee3d8c10fa87d9d485.mp4" type="video/mp4" />
@@ -126,24 +157,25 @@ const Demo: React.FC = () => {
                 
                 {videoPlaybackState === 'pending' && (
                     <div className="absolute inset-0 flex items-center justify-center bg-black/60" aria-label="Загрузка видео...">
-                        <svg className="animate-spin h-10 w-10 text-white" xmlns="http://www.w.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <svg className="animate-spin h-10 w-10 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                         </svg>
                     </div>
                 )}
                 
-                {videoPlaybackState === 'blocked' && (
+                {showPlayButtonOverlay && (
                     <div className="absolute inset-0">
-                        <img src={posterSrc} className="w-full h-full object-cover" alt="Превью демо-видео" />
+                        {videoPlaybackState === 'blocked' && (
+                           <img src={posterSrc} className="w-full h-full object-cover" alt="Превью демо-видео" />
+                        )}
                         <div className="absolute inset-0 flex items-center justify-center bg-black/50">
-                            <button
-                                onClick={handleManualPlay}
-                                className="p-2 bg-white/20 backdrop-blur-sm rounded-full text-white transition-all duration-300 transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50"
+                            <div
+                                className="p-2 bg-white/20 backdrop-blur-sm rounded-full text-white transition-all duration-300 transform hover:scale-110"
                                 aria-label="Воспроизвести демо"
                             >
                                 <PlayIcon className="h-12 w-12" />
-                            </button>
+                            </div>
                         </div>
                     </div>
                 )}
