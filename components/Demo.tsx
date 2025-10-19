@@ -8,6 +8,7 @@ const Demo: React.FC = () => {
   const [isVideoBuffering, setIsVideoBuffering] = useState(false);
   const [isAutoplayBlocked, setIsAutoplayBlocked] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const posterSrc = "https://i.imgur.com/gfm62r8.png";
 
   useEffect(() => {
     setIsTyping(true);
@@ -111,13 +112,14 @@ const Demo: React.FC = () => {
                     playsInline
                     preload="metadata"
                     className="w-full h-full object-cover"
-                    poster="https://i.imgur.com/gfm62r8.png"
+                    poster={posterSrc}
                     onWaiting={() => setIsVideoBuffering(true)}
                     onPlaying={() => setIsVideoBuffering(false)}
                 >
                     <source src="https://allwebs.ru/images/2025/10/16/8d16f12614fcc9ee3d8c10fa87d9d485.mp4" type="video/mp4" />
                     Your browser does not support the video tag.
                 </video>
+                
                 {(isVideoBuffering && !isAutoplayBlocked) && (
                     <div className="absolute inset-0 flex items-center justify-center bg-black/60" aria-label="Загрузка видео...">
                         <svg className="animate-spin h-10 w-10 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -126,20 +128,24 @@ const Demo: React.FC = () => {
                         </svg>
                     </div>
                 )}
+                
                 {isAutoplayBlocked && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-black/50">
-                        <button
-                            onClick={() => {
-                                if (videoRef.current) {
-                                    videoRef.current.play();
-                                    setIsAutoplayBlocked(false);
-                                }
-                            }}
-                            className="p-2 bg-white/20 backdrop-blur-sm rounded-full text-white transition-all duration-300 transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50"
-                            aria-label="Воспроизвести демо"
-                        >
-                            <PlayIcon className="h-12 w-12" />
-                        </button>
+                    <div className="absolute inset-0">
+                        <img src={posterSrc} className="w-full h-full object-cover" alt="Превью демо-видео" />
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/50">
+                            <button
+                                onClick={() => {
+                                    if (videoRef.current) {
+                                        videoRef.current.play();
+                                        setIsAutoplayBlocked(false);
+                                    }
+                                }}
+                                className="p-2 bg-white/20 backdrop-blur-sm rounded-full text-white transition-all duration-300 transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50"
+                                aria-label="Воспроизвести демо"
+                            >
+                                <PlayIcon className="h-12 w-12" />
+                            </button>
+                        </div>
                     </div>
                 )}
               </div>

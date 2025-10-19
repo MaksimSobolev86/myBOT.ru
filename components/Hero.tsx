@@ -6,6 +6,7 @@ interface HeroProps {
 }
 
 const VIDEO_SRC = "https://allwebs.ru/images/2025/10/16/e495101e91e7d50edae4803c9393c740.mp4";
+const POSTER_SRC = "https://i.imgur.com/TUh5j1G.png";
 
 const Hero: React.FC<HeroProps> = ({ onVideoLoaded }) => {
   const tagline = "личный администратор в кармане";
@@ -93,6 +94,7 @@ const Hero: React.FC<HeroProps> = ({ onVideoLoaded }) => {
 
   return (
     <section className="relative h-screen flex items-center justify-center text-center overflow-hidden">
+       <img src={POSTER_SRC} className="absolute top-0 left-0 w-full h-full object-cover z-0" alt="" aria-hidden="true" />
       <video
         ref={videoRef}
         autoPlay
@@ -100,8 +102,8 @@ const Hero: React.FC<HeroProps> = ({ onVideoLoaded }) => {
         muted
         playsInline
         preload="auto"
-        className="absolute top-0 left-0 w-full h-full object-cover z-0"
-        poster="https://i.imgur.com/TUh5j1G.png"
+        className={`absolute top-0 left-0 w-full h-full object-cover z-0 transition-opacity duration-500 ${isAutoplayBlocked ? 'opacity-0' : 'opacity-100'}`}
+        poster={POSTER_SRC}
         src={VIDEO_SRC}
       >
         Your browser does not support the video tag.
