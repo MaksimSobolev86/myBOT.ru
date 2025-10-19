@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { PlayIcon } from '../constants/icons';
 
 const Demo: React.FC = () => {
   const fullText = "Посмотрите, как ваш новый администратор работает сам.";
   const [typedText, setTypedText] = useState('');
   const [isTyping, setIsTyping] = useState(true);
   const [isVideoBuffering, setIsVideoBuffering] = useState(false);
+  const [isAutoplayBlocked, setIsAutoplayBlocked] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
@@ -52,10 +54,15 @@ const Demo: React.FC = () => {
           setIsVideoBuffering(true); // Assume buffering will start
           const playPromise = videoElement.play();
           if (playPromise !== undefined) {
-            playPromise.catch(error => {
-              console.error("Video autoplay was prevented by the browser:", error);
-              setIsVideoBuffering(false);
-            });
+            playPromise
+              .then(() => {
+                setIsAutoplayBlocked(false);
+              })
+              .catch(error => {
+                console.error("Video autoplay was prevented by the browser:", error);
+                setIsVideoBuffering(false); // Stop buffering if play fails
+                setIsAutoplayBlocked(true); // Show play button instead
+              });
           }
         } else {
           videoElement.pause();
@@ -111,12 +118,28 @@ const Demo: React.FC = () => {
                     <source src="https://allwebs.ru/images/2025/10/16/8d16f12614fcc9ee3d8c10fa87d9d485.mp4" type="video/mp4" />
                     Your browser does not support the video tag.
                 </video>
-                {isVideoBuffering && (
+                {(isVideoBuffering && !isAutoplayBlocked) && (
                     <div className="absolute inset-0 flex items-center justify-center bg-black/60" aria-label="Загрузка видео...">
                         <svg className="animate-spin h-10 w-10 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                         </svg>
+                    </div>
+                )}
+                {isAutoplayBlocked && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/50">
+                        <button
+                            onClick={() => {
+                                if (videoRef.current) {
+                                    videoRef.current.play();
+                                    setIsAutoplayBlocked(false);
+                                }
+                            }}
+                            className="p-2 bg-white/20 backdrop-blur-sm rounded-full text-white transition-all duration-300 transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50"
+                            aria-label="Воспроизвести демо"
+                        >
+                            <PlayIcon className="h-12 w-12" />
+                        </button>
                     </div>
                 )}
               </div>

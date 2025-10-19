@@ -11,6 +11,7 @@ const Hero: React.FC<HeroProps> = ({ onVideoLoaded }) => {
   const tagline = "личный администратор в кармане";
   const [typedTagline, setTypedTagline] = useState('');
   const [isTyping, setIsTyping] = useState(true);
+  const [isAutoplayBlocked, setIsAutoplayBlocked] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
@@ -61,9 +62,13 @@ const Hero: React.FC<HeroProps> = ({ onVideoLoaded }) => {
             videoElement.src = VIDEO_SRC;
             videoElement.load();
           }
-          videoElement.play().catch(error => {
-            console.info("Hero video autoplay was prevented:", error);
-          });
+          const playPromise = videoElement.play();
+          if (playPromise !== undefined) {
+            playPromise.catch(error => {
+              console.info("Hero video autoplay was prevented:", error);
+              setIsAutoplayBlocked(true);
+            });
+          }
         } else {
           // Pause and unload video to free up resources
           videoElement.pause();
@@ -102,6 +107,7 @@ const Hero: React.FC<HeroProps> = ({ onVideoLoaded }) => {
         Your browser does not support the video tag.
       </video>
       <div className="absolute top-0 left-0 w-full h-full bg-gray-900/75 z-[1]"></div>
+
       <div className="relative z-10 px-4 animate-[fadeInUp_1s_ease-out]">
         <h1 className="text-4xl sm:text-5xl md:text-7xl font-extrabold tracking-tight mb-2 flex items-center justify-center flex-wrap">
           <LogoIcon className="inline-block h-[1em] w-auto text-primary align-middle" />
